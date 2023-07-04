@@ -1,148 +1,112 @@
-#include "main.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 /**
- * _print - moves a string one place to the left and prints the string
- * @str: string to move
- * @l: size of string
+ * _isdigit - Checks if a character is a digit.
+ * @c: The character to check.
  *
- * Return: void
+ * Return: 1 if the character is a digit, 0 otherwise.
  */
-void _print(char *str, int l)
+int _isdigit(char c)
 {
-	int i, j;
-
-	i = j = 0;
-	while (i < l)
-	{
-		if (str[i] != '0')
-			j = 1;
-		if (j || i == l - 1)
-			_putchar(str[i]);
-		i++;
-	}
-
-	_putchar('\n');
-	free(str);
+	return (c >= '0' && c <= '9');
 }
 
 /**
- * mul - multiplies a char with a string and places the answer into dest
- * @n: char to multiply
- * @num: string to multiply
- * @num_index: last non NULL index of num
- * @dest: destination of multiplication
- * @dest_index: highest index to start addition
+ * allocate_array - Allocates an array of integers and initializes them to 0.
+ * @size: The size of the array to allocate.
  *
- * Return: pointer to dest, or NULL on failure
+ * Return: A pointer to the allocated array, or NULL on failure.
  */
-char *mul(char n, char *num, int num_index, char *dest, int dest_index)
+int *allocate_array(int size)
 {
-	int j, k, mul, mulrem, add, addrem;
-
-	mulrem = addrem = 0;
-	for (j = num_index, k = dest_index; j >= 0; j--, k--)
-	{
-		mul = (n - '0') * (num[j] - '0') + mulrem;
-		mulrem = mul / 10;
-		add = (dest[k] - '0') + (mul % 10) + addrem;
-		addrem = add / 10;
-		dest[k] = add % 10 + '0';
-	}
-	for (addrem += mulrem; k >= 0 && addrem; k--)
-	{
-		add = (dest[k] - '0') + addrem;
-		addrem = add / 10;
-		dest[k] = add % 10 + '0';
-	}
-	if (addrem)
-	{
-		return (NULL);
-	}
-	return (dest);
-}
-
-/**
- * check_for_digits - checks the arguments to ensure they are digits
- * @av: pointer to arguments
- *
- * Return: 0 if digits, 1 if not
- */
-int check_for_digits(char **av)
-{
-	int i, j;
-
-	for (i = 1; i < 3; i++)
-	{
-		for (j = 0; av[i][j]; j++)
-		{
-			if (av[i][j] < '0' || av[i][j] > '9')
-				return (1);
-		}
-	}
-	return (0);
-}
-
-/**
- * init - initializes a string
- * @str: sting to initialize
- * @l: length of strinf
- *
- * Return: void
- */
-void init(char *str, int l)
-{
+	int *array;
 	int i;
 
-	for (i = 0; i < l; i++)
-		str[i] = '0';
-	str[i] = '\0';
+	array = malloc(sizeof(int) * size);
+	if (array == NULL)
+	{
+		printf("Error\n");
+		exit(98);
+	}
+
+	for (i = 0; i < size; i++)
+		array[i] = 0;
+
+	return (array);
 }
 
 /**
- * main - multiply two numbers
- * @argc: number of arguments
- * @argv: argument vector
- *
- * Return: zero, or exit status of 98 if failure
+ * multiply - Multiplies two positive numbers.
+ * @num1: The first number as a string.
+ * @num2: The second number as a string.
  */
-
-int main(int argc, char *argv[])
+void multiply(char *num1, char *num2)
 {
-	int l1, l2, ln, ti, i;
-	char *a;
-	char *t;
-	char e[] = "Error\n";
+	int len1 = 0, len2 = 0, i, j;
+	int *result;
 
-	if (argc != 3 || check_for_digits(argv))
+	while (num1[len1])
+		len1++;
+	while (num2[len2])
+		len2++;
+
+	result = allocate_array(len1 + len2);
+
+	for (i = len1 - 1; i >= 0; i--)
 	{
-		for (ti = 0; e[ti]; ti++)
-			_putchar(e[ti]);
-		exit(98);
-	}
-	for (l1 = 0; argv[1][l1]; l1++)
-		;
-	for (l2 = 0; argv[2][l2]; l2++)
-		;
-	ln = l1 + l2 + 1;
-	a = malloc(ln * sizeof(char));
-	if (a == NULL)
-	{
-		for (ti = 0; e[ti]; ti++)
-			_putchar(e[ti]);
-		exit(98);
-	}
-	init(a, ln - 1);
-	for (ti = l2 - 1, i = 0; ti >= 0; ti--, i++)
-	{
-		t = mul(argv[2][ti], argv[1], l1 - 1, a, (ln - 2) - i);
-		if (t == NULL)
+		if (!_isdigit(num1[i]) || num1[i] == '-')
 		{
-			for (ti = 0; e[ti]; ti++)
-				_putchar(e[ti]);
-			free(a);
+			printf("Error\n");
+			free(result);
 			exit(98);
 		}
+		for (j = len2 - 1; j >= 0; j--)
+		{
+			if (!_isdigit(num2[j]) || num2[j] == '-')
+			{
+				printf("Error\n");
+				free(result);
+				exit(98);
+			}
+			result[i + j + 1] += (num1[i] - '0') * (num2[j] - '0');
+			result[i + j] += result[i + j + 1] / 10;
+			result[i + j + 1] %= 10;
+		}
 	}
-	_print(a, ln - 1);
+
+	i = 0;
+	while (i < len1 + len2 && result[i] == 0)
+		i++;
+
+	if (i == len1 + len2)
+		printf("0");
+	else
+	{
+		while (i < len1 + len2)
+			printf("%d", result[i++]);
+	}
+
+	printf("\n");
+	free(result);
+}
+
+/**
+ * main - Entry point. Accepts two positive numbers as arguments and multiplies them.
+ * @argc: The argument count.
+ * @argv: The argument vector.
+ *
+ * Return: 0 on success, 98 on error.
+ */
+int main(int argc, char *argv[])
+{
+	if (argc != 3)
+	{
+		printf("Error\n");
+		return (98);
+	}
+
+	multiply(argv[1], argv[2]);
+
 	return (0);
 }
