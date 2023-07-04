@@ -20,20 +20,15 @@ while (current != NULL)
 {
 num++;
 next = current->next;
-
 current->next = NULL;
 free(current);
-
-		
 if (next >= current)
 {
-*head = NULL; 
+*head = NULL;
 return (num);
 }
-
 current = next;
 }
-
-*head = NULL; 
+*head = NULL;
 return (num);
 }
